@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "core.restore_state",
+  "data": [
+    {
+      "state": {"entity_id":"conversation.home_assistant","state":"unknown","attributes":{"friendly_name":"Home Assistant","supported_features":1},"last_changed":"2025-10-12T09:00:49.594042+00:00","last_reported":"2025-10-12T09:00:49.594042+00:00","last_updated":"2025-10-12T09:00:49.594042+00:00","context":{"id":"01K7BTDC1T0P5X4QMDBH91YBYN","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2025-10-12T09:00:50.606815+00:00"
+    },
+    {
+      "state": {"entity_id":"person.madone","state":"unknown","attributes":{"editable":true,"id":"madone","device_trackers":[],"source":"person.madone","user_id":"3d92d7d26ef948ba857f5a251de66314","friendly_name":"madone"},"last_changed":"2025-10-12T09:00:49.934566+00:00","last_reported":"2025-10-12T09:00:49.934566+00:00","last_updated":"2025-10-12T09:00:49.934566+00:00","context":{"id":"01K7BTDCCE7TQRSSHXTB3Q0MTX","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2025-10-12T09:00:50.606815+00:00"
+    }
+  ]
+}
