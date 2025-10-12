@@ -1,20 +1,13 @@
 # Version 0.0.1
-Added control for changing salt mass. The control shows the current salt mass. When refilling, the mass that was refilled has to be added to the shown mass.
+Initial Release
 
 # hass_gira_iot_api
 Home Assistant integration to connect your X1/Homeserver via REST API based on this documentation:
 https://partner.gira.de/data3/Gira_IoT_REST_API_v2_DE.pdf
 
-
 # hass_gira_iot_api
-
 This integration adds the devices you have configured in your Gira X1 / Gira Homeserver to HomeAssistant.
 For now only lights are supported
-
-
-
-
-
 
 ## Installation
 
@@ -26,7 +19,7 @@ Add this repository to HACS.
 * Category: Integration
 * After adding the integration, restart Home Assistant.
 * Now press the button "Add Integration" in Configuration -> Integrations to install it in Home assistant.
-* Now under Configuration -> Integrations, "Judo REST API" should be available.
+* Now under Configuration -> Integrations, "HomeAssistant Gira IOT API" should be available.
 
 ### Manual install
 
@@ -53,8 +46,6 @@ The only mandatory parameters are:
 * The IP-Address of your Gira Iot  device.
 * The user name.
 * The password.
-
-
 
 # Disclaimer
 The developers of this integration are not affiliated with Gira. They have created the integration as open source in their spare time on the basis of publicly accessible information.
