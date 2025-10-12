@@ -85,7 +85,7 @@ class GiraDevice:
                         OnOffUid = dataPoint["uid"]
                     case "Brightness":
                         DimmUid = dataPoint["uid"]
-                    case "Brightness":
+                    case "Color-Temperature":
                         TuneUid = dataPoint["uid"]
             name = light["displayName"]
             gira_lights[light_uid] = GiraLight(
