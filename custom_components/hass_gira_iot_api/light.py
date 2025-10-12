@@ -11,7 +11,6 @@ from .configentry import MyConfigEntry
 from .entities import MyLightEntity
 from .gira_device import GiraDevice
 
-
 logging.basicConfig()
 log: logging.Logger = logging.getLogger(name=__name__)
 

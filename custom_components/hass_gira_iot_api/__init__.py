@@ -7,7 +7,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .configentry import MyConfigEntry, MyData
-from .const import CONF, CONST
+from .const import CONF
 from .gira_device import GiraDevice
 
 logging.basicConfig()

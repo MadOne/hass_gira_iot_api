@@ -72,13 +72,14 @@ class GiraDevice:
     def create_gira_lights(self):
         """Create Gira Lights."""
         gira_lights = {}
-        name = None
-        OnOffUid = None
-        DimmUid = None
-        TuneUid = None
+
         lights = self._ui["trades"][0]["functions"]
         for light_uid in lights:
             light = self._functions[light_uid]
+            name = None
+            OnOffUid = None
+            DimmUid = None
+            TuneUid = None
             for dataPoint in light["dataPoints"]:
                 match dataPoint["name"]:
                     case "OnOff":
@@ -96,7 +97,6 @@ class GiraDevice:
                 TuneUid=TuneUid,
             )
         self.gira_lights = gira_lights
-        log.warning(gira_lights)
 
     def create_functions(self):
         """Create a dict with the functions."""
