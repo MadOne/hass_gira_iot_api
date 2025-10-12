@@ -25,8 +25,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
     # Store an instance of the "connecting" class that does the work of speaking
     # with your actual devices.
     # hass.data.setdefault(DOMAIN, {})[entry.entry_id] = hub.Hub(hass, entry.data["host"])
+
     giraApi = GiraDevice(
-        host="10.10.1.12", user="Username", password="My$up3rs3cur3P4$$w0rd"
+        host=entry.data[CONF.HOST],
+        user=entry.data[CONF.USERNAME],
+        password=entry.data[CONF.PASSWORD],
     )
     await giraApi.connect()
     await giraApi.get_ui()
@@ -76,7 +79,6 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: MyConfigEntry):
 
     if config_entry.version < 2:
         log.warning("Version <2 detected")
-        new_data[CONF.SCAN_INTERVAL] = CONST.SCAN_INTERVAL
 
     hass.config_entries.async_update_entry(
         config_entry, data=new_data, minor_version=1, version=2

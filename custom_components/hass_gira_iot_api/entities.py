@@ -27,6 +27,8 @@ class MyLightEntity(LightEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn device on."""
+        await self._GiraDevice.set_val(self._GiraLight.OnOffUid, 1)
 
     async def async_turn_off(self, **kwargs):
         """Turn device off."""
+        await self._GiraDevice.set_val(self._GiraLight.OnOffUid, 0)

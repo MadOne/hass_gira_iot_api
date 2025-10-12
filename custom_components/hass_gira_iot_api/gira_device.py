@@ -19,7 +19,7 @@ class GiraDevice:
         self._token = None
         self._ui = None
         self._functions = None
-        self._gira_lights = None
+        self.gira_lights = None
         self._session = aiohttp.ClientSession()
         self._auth = aiohttp.BasicAuth(
             login=self._user,
@@ -45,6 +45,29 @@ class GiraDevice:
         json = await response.json()
         self._ui = json
         # log.warning(json)
+
+    async def get_val(self, uid: str) -> int:
+        """Get the UI json."""
+        url = f"https://{self._host}/api/v2/values/{uid}?token={self._token}"
+        response = await self._session.get(url=url, auth=self._auth, ssl=False)
+        json = await response.json()
+        return json["values"][0]["value"]
+        # log.warning(json)
+
+    async def set_val(self, uid, val) -> int:
+        """Get the UI json."""
+        payload = f"""{{
+                \"values\": [
+                    {{
+                        \"uid\": \"{uid}\",
+                        \"value\": {val}
+                    }}
+                ]
+            }}"""
+        url = f"https://{self._host}/api/v2/values?token={self._token}"
+        _response = await self._session.put(
+            url=url, auth=self._auth, ssl=False, data=payload
+        )
 
     def create_gira_lights(self):
         """Create Gira Lights."""
@@ -72,7 +95,7 @@ class GiraDevice:
                 DimmUid=DimmUid,
                 TuneUid=TuneUid,
             )
-        self._gira_lights = gira_lights
+        self.gira_lights = gira_lights
         log.warning(gira_lights)
 
     def create_functions(self):
