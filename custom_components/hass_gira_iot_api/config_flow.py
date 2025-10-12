@@ -1,9 +1,11 @@
 """Config flow."""
 
 from typing import Any
+
 import voluptuous as vol
+
 from homeassistant import config_entries, exceptions
-import homeassistant.helpers.config_validation as cv
+
 from .const import CONF, CONST
 
 
@@ -35,7 +37,7 @@ async def validate_input(data: dict) -> dict[str, Any]:
     return {"title": data["host"]}
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):  # pylint: disable=W0223
+class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):
     """Class config flow."""
 
     VERSION = 2
@@ -61,11 +63,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):  # pylint: dis
         data_schema = vol.Schema(
             schema={
                 vol.Required(schema=CONF.HOST): str,
-                vol.Optional(schema=CONF.PORT, default="80"): cv.port,
                 vol.Optional(schema=CONF.USERNAME, default="admin"): str,
                 vol.Optional(schema=CONF.PASSWORD, default="Connectivity"): str,
-                vol.Optional(schema=CONF.DEVICE_POSTFIX, default=""): str,
-                vol.Optional(schema=CONF.SCAN_INTERVAL, default="60"): str,
             }
         )
 
@@ -88,11 +87,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):  # pylint: dis
             errors=errors,
             description_placeholders={
                 CONF.HOST: "host",
-                CONF.PORT: "port",
                 CONF.USERNAME: "username",
                 CONF.PASSWORD: "password",
-                CONF.DEVICE_POSTFIX: "Device-Postfix",
-                CONF.SCAN_INTERVAL: "scan_interval",
             },
         )
 
@@ -116,23 +112,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):  # pylint: dis
                     schema=CONF.HOST, default=reconfigure_entry.data[CONF.HOST]
                 ): str,
                 vol.Optional(
-                    schema=CONF.PORT, default=reconfigure_entry.data[CONF.PORT]
-                ): cv.port,
-                vol.Optional(
                     schema=CONF.USERNAME, default=reconfigure_entry.data[CONF.USERNAME]
                 ): str,
                 vol.Optional(
                     schema=CONF.PASSWORD, default=reconfigure_entry.data[CONF.PASSWORD]
                 ): str,
                 # reconfigure of device postfix leads to duplicated devices
-                vol.Optional(
-                    schema=CONF.DEVICE_POSTFIX,
-                    default=reconfigure_entry.data[CONF.DEVICE_POSTFIX],
-                ): str,
-                vol.Optional(
-                    schema=CONF.SCAN_INTERVAL,
-                    default=reconfigure_entry.data[CONF.SCAN_INTERVAL],
-                ): str,
             }
         )
 
@@ -142,11 +127,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):  # pylint: dis
             errors=errors,
             description_placeholders={
                 CONF.HOST: "host",
-                CONF.PORT: "port",
                 CONF.USERNAME: "username",
                 CONF.PASSWORD: "password",
-                CONF.DEVICE_POSTFIX: "Device-Postfix",
-                CONF.SCAN_INTERVAL: "scan_interval",
             },
         )
 

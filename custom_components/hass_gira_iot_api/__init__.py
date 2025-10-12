@@ -1,26 +1,20 @@
 """init."""
 
 import logging
-# from pathlib import Path
 
+# from pathlib import Path
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .configentry import MyConfigEntry, MyData
 from .const import CONF, CONST
-from .jdconst import DEVICELISTS
-from .coordinator import MyCoordinator
-from .restobject import RestAPI
+from .gira_device import GiraDevice
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
 
 PLATFORMS: list[str] = [
-    "number",
-    "select",
-    "sensor",
-    # "switch",
-    "button",
+    "light",
 ]
 
 
@@ -31,24 +25,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
     # Store an instance of the "connecting" class that does the work of speaking
     # with your actual devices.
     # hass.data.setdefault(DOMAIN, {})[entry.entry_id] = hub.Hub(hass, entry.data["host"])
-    restapi = RestAPI(config_entry=entry, hass=hass)
+    giraApi = GiraDevice(
+        host="10.10.1.12", user="Username", password="My$up3rs3cur3P4$$w0rd"
+    )
+    await giraApi.connect()
+    await giraApi.get_ui()
+    giraApi.create_functions()
+    giraApi.create_gira_lights()
     # await restapi.login()
 
-    itemlist = []
-
-    for device in DEVICELISTS:
-        for item in device:
-            itemlist.append(item)
-
-    coordinator = MyCoordinator(
-        hass=hass, my_api=restapi, api_items=itemlist, p_config_entry=entry
-    )
-    await coordinator.async_config_entry_first_refresh()
-
     entry.runtime_data = MyData(
-        rest_api=restapi,
+        gira_api=giraApi,
         hass=hass,
-        coordinator=coordinator,
     )
 
     # see https://community.home-assistant.io/t/config-flow-how-to-update-an-existing-entity/522442/8
@@ -102,5 +90,4 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # needs to unload itself, and remove callbacks. See the classes for further
     # details
     entry.runtime_data.rest_api.close()
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    return unload_ok
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

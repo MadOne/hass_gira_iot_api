@@ -7,6 +7,6 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/OStrama/judo_rest_api/issues",
   "loggers": ["hass_gira_iot_api"],
-  "requirements": [],
+  "requirements": ["aiohttp"],
   "version": "0.0.1"
 }
