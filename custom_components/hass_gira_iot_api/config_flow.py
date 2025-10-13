@@ -9,7 +9,7 @@ from homeassistant import config_entries, exceptions
 from .const import CONF, CONST
 
 
-async def validate_input(data: dict) -> dict[str, Any]:
+async def validate_input(data: dict[str, str]) -> dict[str, str]:
     """Validate the input."""
     # Validate the data can be used to set up a connection.
 
@@ -47,7 +47,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):
     # changes.
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
 
-    async def async_step_user(self, user_input=None) -> config_entries.ConfigFlowResult:
+    async def async_step_user(
+        self, user_input: dict[str, str] | None = None
+    ) -> config_entries.ConfigFlowResult:
         """Step for setup process."""
         # This goes through the steps to take the user through the setup process.
         # Using this it is possible to update the UI and prompt for additional
@@ -60,7 +62,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):
         # The caption comes from strings.json / translations/en.json.
         # strings.json can be processed into en.json with some HA commands.
         # did not find out how this works yet.
-        data_schema = vol.Schema(
+        data_schema: vol.Schema = vol.Schema(
             schema={
                 vol.Required(schema=CONF.HOST): str,
                 vol.Optional(schema=CONF.USERNAME, default="admin"): str,
@@ -68,11 +70,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):
             }
         )
 
-        errors = {}
-        info = None
+        errors: dict[str, str] = {}
+        info: dict[str, str] = {}
         if user_input is not None:
             try:
-                info = await validate_input(data=user_input)
+                info: dict[str, str] = await validate_input(data=user_input)
 
                 return self.async_create_entry(title=info["title"], data=user_input)
 
@@ -106,7 +108,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):
                 entry=reconfigure_entry, data_updates=user_input
             )
 
-        schema_reconfigure = vol.Schema(
+        schema_reconfigure: vol.Schema = vol.Schema(
             schema={
                 vol.Required(
                     schema=CONF.HOST, default=reconfigure_entry.data[CONF.HOST]

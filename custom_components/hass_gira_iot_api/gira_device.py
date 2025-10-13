@@ -1,5 +1,7 @@
 """Gira IOT Device Class."""
 
+import builtins
+import contextlib
 import logging
 
 import aiohttp
@@ -13,17 +15,17 @@ class GiraDevice:
 
     def __init__(self, host: str, user: str, password: str) -> None:
         """Gira IOT Device Class Constructor."""
-        self._host = host
-        self._user = user
-        self._password = password
-        self._token = None
-        self._ui = None
-        self._functions = None
-        self._all_values = None
-        self.gira_lights = None
-        self.gira_climates = None
-        self._session = aiohttp.ClientSession()
-        self._auth = aiohttp.BasicAuth(
+        self._host: str = host
+        self._user: str = user
+        self._password: str = password
+        self._token: str | None = None
+        self._ui = {}
+        self._functions = []
+        self._all_values: dict[str, str] = {}
+        self.gira_lights: dict[str, GiraLight] = {}
+        self.gira_climates: dict[str, GiraClimate] = {}
+        self._session: aiohttp.ClientSession = aiohttp.ClientSession()
+        self._auth: aiohttp.BasicAuth = aiohttp.BasicAuth(
             login=self._user,
             password=self._password,
         )
@@ -32,7 +34,7 @@ class GiraDevice:
         """Connect to the Gira IOT Device."""
 
         payload = '{"client":"de.madone.x1client"}'
-        url = f"https://{self._host}/api/clients"
+        url: str = f"https://{self._host}/api/clients"
         response = await self._session.post(
             url=url, auth=self._auth, data=payload, ssl=False
         )
@@ -46,24 +48,23 @@ class GiraDevice:
         response = await self._session.get(url=url, auth=self._auth, ssl=False)
         json = await response.json()
         self._ui = json
-        log.warning(json)
+        log.warning(msg=json)
 
-    async def get_val(self, uid: str) -> int:
+    async def get_val(self, uid: str) -> int | None:
         """Get the UI json."""
         url = f"https://{self._host}/api/v2/values/{uid}?token={self._token}"
         response = await self._session.get(url=url, auth=self._auth, ssl=False)
         json = await response.json()
         log.warning(json)
         try:
-            val = json["values"][0]["value"]
-            return val
-        except:
-            return None
+            return json["values"][0]["value"]
+        except:  # noqa: E722
+            ...
 
-    async def get_device_values(self, uid: str):
+    async def get_device_values(self, uid: str) -> dict[str, str | int | float]:
         """Get the UI json."""
-        values = {}
-        url = f"https://{self._host}/api/v2/values/{uid}?token={self._token}"
+        values: dict[str, str | int | float] = {}
+        url: str = f"https://{self._host}/api/v2/values/{uid}?token={self._token}"
         response = await self._session.get(url=url, auth=self._auth, ssl=False)
         json = await response.json()
         for value in json["values"]:
@@ -73,14 +74,14 @@ class GiraDevice:
     async def get_all_values(self):
         """Get all the values of the GiraDevice."""
         all_values = {}
-        lights = self._ui["trades"][0]["functions"]
+        lights: list[str] = self._ui["trades"][0]["functions"]
         for light_uid in lights:
             values = {}
             values = await self.get_device_values(light_uid)
             all_values.update(values)
         self._all_values = all_values
 
-    async def set_val(self, uid, val) -> int:
+    async def set_val(self, uid: str, val: int) -> None:
         """Get the UI json."""
         payload = f"""{{
                 \"values\": [
@@ -95,47 +96,42 @@ class GiraDevice:
             url=url, auth=self._auth, ssl=False, data=payload
         )
 
-    async def get_values(self):
-        values = {}
-
     async def create_gira_lights(self):
         """Create Gira Lights."""
-        gira_lights = {}
+        gira_lights: dict[str, GiraLight] = {}
 
         lights = self._ui["trades"][0]["functions"]
         for light_uid in lights:
             light = self._functions[light_uid]
-            name = None
-            OnOffUid = None
-            OnOffVal = None
-            DimmUid = None
-            DimmVal = None
-            TuneUid = None
-            TuneVal = None
+            name: str = ""
+            OnOffUid: str = ""
+            OnOffVal: bool = False
+            DimmUid: str = ""
+            DimmVal: int = 0
+            TuneUid: str = ""
+            TuneVal: int = 0
             for dataPoint in light["dataPoints"]:
                 match dataPoint["name"]:
                     case "OnOff":
-                        OnOffUid = dataPoint["uid"]
-                        OnOffVal_Number = self._all_values[OnOffUid]
+                        OnOffUid: str = dataPoint["uid"]
+                        OnOffVal_Number: str = self._all_values[OnOffUid]
                         if OnOffVal_Number == "1":
-                            OnOffVal = True
+                            OnOffVal: bool = True
                         else:
-                            OnOffVal = False
+                            OnOffVal: bool = False
                     case "Brightness":
-                        DimmUid = dataPoint["uid"]
-                        try:
-                            DimmVal = int(float(self._all_values[DimmUid]) / 100 * 255)
-                        except:
-                            ...
+                        DimmUid: str = dataPoint["uid"]
+                        with contextlib.suppress(builtins.BaseException):
+                            DimmVal: int = int(
+                                float(self._all_values[DimmUid]) / 100 * 255
+                            )
                         # print(DimmVal)
                     case "Color-Temperature":
-                        TuneUid = dataPoint["uid"]
-                        try:
-                            TuneVal = int(self._all_values[TuneUid])
-                        except:
-                            ...
+                        TuneUid: str = dataPoint["uid"]
+                        with contextlib.suppress(builtins.BaseException):
+                            TuneVal: int = int(self._all_values[TuneUid])
                         # print(DimmVal)
-            name = light["displayName"]
+            name: str = light["displayName"]
             gira_lights[light_uid] = GiraLight(
                 uid=light_uid,
                 name=name,
@@ -146,7 +142,7 @@ class GiraDevice:
                 TuneUid=TuneUid,
                 TuneVal=TuneVal,
             )
-        self.gira_lights = gira_lights
+        self.gira_lights: dict[str, GiraLight] = gira_lights
 
     def create_gira_climates(self):
         """Create Gira Lights."""
@@ -155,19 +151,19 @@ class GiraDevice:
         climates = self._ui["trades"][3]["functions"]
         for climate_uid in climates:
             climate = self._functions[climate_uid]
-            name = None
-            CurrentUid = None
-            SetPointUid = None
-            ModeUid = None
+            name: str = ""
+            CurrentUid: str = ""
+            SetPointUid: str = ""
+            ModeUid: str = ""
             for dataPoint in climate["dataPoints"]:
                 match dataPoint["name"]:
                     case "Current":
-                        CurrentUid = dataPoint["uid"]
+                        CurrentUid: str = dataPoint["uid"]
                     case "Set-Point":
-                        SetPointUid = dataPoint["uid"]
+                        SetPointUid: str = dataPoint["uid"]
                     case "Mode":
-                        ModeUid = dataPoint["uid"]
-            name = climate["displayName"]
+                        ModeUid: str = dataPoint["uid"]
+            name: str = climate["displayName"]
             gira_climates[climate_uid] = GiraClimate(
                 uid=climate_uid,
                 name=name,
@@ -194,21 +190,21 @@ class GiraLight:
         uid: str,
         name: str,
         OnOffUid: str,
-        OnOffVal: bool | None = None,
-        DimmUid: str | None = None,
-        DimmVal: int | None = None,
-        TuneUid: str | None = None,
-        TuneVal: int | None = None,
+        OnOffVal: bool = False,
+        DimmUid: str = "",
+        DimmVal: int = 0,
+        TuneUid: str = "",
+        TuneVal: int = 0,
     ) -> None:
         """Init."""
-        self.uid = uid
-        self.name = name
-        self.OnOffUid = OnOffUid
-        self.OnOffVal = OnOffVal
-        self.DimmUid = DimmUid
-        self.DimmVal = DimmVal
-        self.TuneUid = TuneUid
-        self.TuneVal = TuneVal
+        self.uid: str = uid
+        self.name: str = name
+        self.OnOffUid: str = OnOffUid
+        self.OnOffVal: bool = OnOffVal
+        self.DimmUid: str = DimmUid
+        self.DimmVal: int = DimmVal
+        self.TuneUid: str = TuneUid
+        self.TuneVal: int = TuneVal
 
 
 class GiraClimate:
@@ -218,13 +214,13 @@ class GiraClimate:
         self,
         uid: str,
         name: str,
-        CurrentUid: str,
-        SetPointUid: str | None = None,
-        ModeUid: str | None = None,
+        CurrentUid: str = "",
+        SetPointUid: str = "",
+        ModeUid: str = "",
     ) -> None:
         """Init."""
-        self.uid = uid
-        self.name = name
-        self.CurreentUid = CurrentUid
-        self.SetPointUid = SetPointUid
-        self.ModeUid = ModeUid
+        self.uid: str = uid
+        self.name: str = name
+        self.CurrentUid: str = CurrentUid
+        self.SetPointUid: str = SetPointUid
+        self.ModeUid: str = ModeUid
