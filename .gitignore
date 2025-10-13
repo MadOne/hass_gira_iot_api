@@ -22,6 +22,7 @@ config/*
 custom_components/hacs/*
 configuration.yaml
 automations.yaml
+.ha_run.lock
 .HA_VERSION
 scenes.yaml
 scripts.yaml

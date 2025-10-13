@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .configentry import MyConfigEntry
-from .entities import MyLightEntity
+from .entities import MyClimateEntity
 from .gira_device import GiraDevice
 
 logging.basicConfig()
@@ -20,16 +20,16 @@ async def async_setup_entry(
     config_entry: MyConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the light platform."""
+    """Set up the climate platform."""
 
     _useless = hass
     # start with an empty list of entries
     entries = []
 
     giraAPI: GiraDevice = config_entry.runtime_data.gira_api
-    for light in giraAPI.gira_lights.values():
-        mylight = MyLightEntity(myGiraDevice=giraAPI, myGiraLight=light)
-        entries.append(mylight)
+    for climate in giraAPI.gira_climates.values():
+        myclimate = MyClimateEntity(myGiraDevice=giraAPI, myGiraLight=climate)
+        entries.append(myclimate)
 
     async_add_entities(
         entries,
