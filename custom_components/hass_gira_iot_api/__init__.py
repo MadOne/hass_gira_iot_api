@@ -14,7 +14,11 @@ from .gira_device import GiraDevice
 logging.basicConfig()
 log: logging.Logger = logging.getLogger(name=__name__)
 
-PLATFORMS: list[str] = ["climate", "light"]
+PLATFORMS: list[str] = [
+    "climate",
+    "cover",
+    "light",
+]
 
 
 # Return boolean to indicate that initialization was successful.
@@ -36,6 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
     giraApi.create_functions()
     await giraApi.create_gira_lights()
     giraApi.create_gira_climates()
+    giraApi.create_gira_covers()
 
     # await restapi.login()
 

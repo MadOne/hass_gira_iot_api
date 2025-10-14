@@ -25,6 +25,7 @@ class GiraDevice:
         self.all_values: dict[str, dict[str, Any]] = {}
         self.gira_lights: dict[str, GiraLight] = {}
         self.gira_climates: dict[str, GiraClimate] = {}
+        self.gira_covers: dict[str, GiraCover] = {}
         self._session: aiohttp.ClientSession = aiohttp.ClientSession()
         self._auth: aiohttp.BasicAuth = aiohttp.BasicAuth(
             login=self._user,
@@ -86,6 +87,12 @@ class GiraDevice:
             values = {}
             values = await self.get_device_values(climate_uid)
             self.all_values[climate_uid] = values
+
+        covers: list[str] = self._ui["trades"][2]["functions"]
+        for cover_uid in covers:
+            values = {}
+            values = await self.get_device_values(cover_uid)
+            self.all_values[cover_uid] = values
 
     async def set_val(self, uid: str, val: int) -> None:
         """Get the UI json."""
@@ -179,6 +186,39 @@ class GiraDevice:
             )
         self.gira_climates = gira_climates
 
+    def create_gira_covers(self):
+        """Create Gira Lights."""
+        gira_covers = {}
+
+        covers = self._ui["trades"][2]["functions"]
+        for cover_uid in covers:
+            cover = self._functions[cover_uid]
+            name: str = ""
+            StepUpDownUid: str = ""
+            UpDownUid: str = ""
+            PositionUid: str = ""
+            SlatPositionUid: str = ""
+            for dataPoint in cover["dataPoints"]:
+                match dataPoint["name"]:
+                    case "Step-Up-Down":
+                        StepUpDownUid: str = dataPoint["uid"]
+                    case "Up-Down":
+                        UpDownUid: str = dataPoint["uid"]
+                    case "Position":
+                        PositionUid: str = dataPoint["uid"]
+                    case "Slat-Position":
+                        SlatPositionUid: str = dataPoint["uid"]
+            name: str = cover["displayName"]
+            gira_covers[cover_uid] = GiraCover(
+                uid=cover_uid,
+                name=name,
+                StepUpDownUid=StepUpDownUid,
+                UpDownUid=UpDownUid,
+                PositionUid=PositionUid,
+                SlatPositionUid=SlatPositionUid,
+            )
+        self.gira_covers = gira_covers
+
     def create_functions(self):
         """Create a dict with the functions."""
         functions = {}
@@ -230,3 +270,24 @@ class GiraClimate:
         self.CurrentUid: str = CurrentUid
         self.SetPointUid: str = SetPointUid
         self.ModeUid: str = ModeUid
+
+
+class GiraCover:
+    """Gira Light Class."""
+
+    def __init__(
+        self,
+        uid: str,
+        name: str,
+        StepUpDownUid: str = "",
+        UpDownUid: str = "",
+        PositionUid: str = "",
+        SlatPositionUid: str = "",
+    ) -> None:
+        """Init."""
+        self.uid: str = uid
+        self.name: str = name
+        self.StepUpDownUid: str = StepUpDownUid
+        self.UpDownUid: str = UpDownUid
+        self.PositionUid: str = PositionUid
+        self.SlatPositionUid: str = SlatPositionUid
