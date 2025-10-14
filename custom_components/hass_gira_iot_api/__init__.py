@@ -3,6 +3,7 @@
 import logging
 
 # from pathlib import Path
+from config.custom_components.hass_gira_iot_api.coordinator import MyCoordinator
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
@@ -38,10 +39,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
 
     # await restapi.login()
 
-    entry.runtime_data = MyData(
-        gira_api=giraApi,
-        hass=hass,
-    )
+    coordinator: MyCoordinator = MyCoordinator(hass=hass, gira_api=giraApi)
+
+    entry.runtime_data = MyData(gira_api=giraApi, hass=hass, coordinator=coordinator)
 
     # see https://community.home-assistant.io/t/config-flow-how-to-update-an-existing-entity/522442/8
     entry.async_on_unload(func=entry.add_update_listener(listener=update_listener))

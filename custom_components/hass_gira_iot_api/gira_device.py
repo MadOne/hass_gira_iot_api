@@ -3,6 +3,7 @@
 import builtins
 import contextlib
 import logging
+from typing import Any
 
 import aiohttp
 
@@ -21,7 +22,7 @@ class GiraDevice:
         self._token: str | None = None
         self._ui = {}
         self._functions = []
-        self._all_values: dict[str, str] = {}
+        self.all_values: dict[str, dict[str, Any]] = {}
         self.gira_lights: dict[str, GiraLight] = {}
         self.gira_climates: dict[str, GiraClimate] = {}
         self._session: aiohttp.ClientSession = aiohttp.ClientSession()
@@ -73,13 +74,18 @@ class GiraDevice:
 
     async def get_all_values(self):
         """Get all the values of the GiraDevice."""
-        all_values = {}
+        self.all_values = {}
         lights: list[str] = self._ui["trades"][0]["functions"]
         for light_uid in lights:
             values = {}
             values = await self.get_device_values(light_uid)
-            all_values.update(values)
-        self._all_values = all_values
+            self.all_values[light_uid] = values
+
+        climates: list[str] = self._ui["trades"][3]["functions"]
+        for climate_uid in climates:
+            values = {}
+            values = await self.get_device_values(climate_uid)
+            self.all_values[climate_uid] = values
 
     async def set_val(self, uid: str, val: int) -> None:
         """Get the UI json."""
@@ -114,7 +120,7 @@ class GiraDevice:
                 match dataPoint["name"]:
                     case "OnOff":
                         OnOffUid: str = dataPoint["uid"]
-                        OnOffVal_Number: str = self._all_values[OnOffUid]
+                        OnOffVal_Number: str = self.all_values[light_uid][OnOffUid]
                         if OnOffVal_Number == "1":
                             OnOffVal: bool = True
                         else:
@@ -123,13 +129,13 @@ class GiraDevice:
                         DimmUid: str = dataPoint["uid"]
                         with contextlib.suppress(builtins.BaseException):
                             DimmVal: int = int(
-                                float(self._all_values[DimmUid]) / 100 * 255
+                                float(self.all_values[light_uid][DimmUid]) / 100 * 255
                             )
                         # print(DimmVal)
                     case "Color-Temperature":
                         TuneUid: str = dataPoint["uid"]
                         with contextlib.suppress(builtins.BaseException):
-                            TuneVal: int = int(self._all_values[TuneUid])
+                            TuneVal: int = int(self.all_values[light_uid][TuneUid])
                         # print(DimmVal)
             name: str = light["displayName"]
             gira_lights[light_uid] = GiraLight(

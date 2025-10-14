@@ -22,13 +22,16 @@ async def async_setup_entry(
 ) -> None:
     """Set up the light platform."""
 
+    coordinator = config_entry.runtime_data.coordinator
     _useless = hass
     # start with an empty list of entries
     entries: list[MyLightEntity] = []
 
     giraAPI: GiraDevice = config_entry.runtime_data.gira_api
     for light in giraAPI.gira_lights.values():
-        mylight: MyLightEntity = MyLightEntity(myGiraDevice=giraAPI, myGiraLight=light)
+        mylight: MyLightEntity = MyLightEntity(
+            myGiraDevice=giraAPI, myGiraLight=light, coordinator=coordinator
+        )
         entries.append(mylight)
 
     async_add_entities(

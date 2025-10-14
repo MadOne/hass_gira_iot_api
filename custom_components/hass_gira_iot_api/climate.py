@@ -23,13 +23,14 @@ async def async_setup_entry(
     """Set up the climate platform."""
 
     _useless: HomeAssistant = hass
+    coordinator = config_entry.runtime_data.coordinator
     # start with an empty list of entries
     entries: list[MyClimateEntity] = []
 
     giraAPI: GiraDevice = config_entry.runtime_data.gira_api
     for climate in giraAPI.gira_climates.values():
         myclimate: MyClimateEntity = MyClimateEntity(
-            myGiraDevice=giraAPI, myGiraClimate=climate
+            myGiraDevice=giraAPI, myGiraClimate=climate, coordinator=coordinator
         )
         entries.append(myclimate)
 

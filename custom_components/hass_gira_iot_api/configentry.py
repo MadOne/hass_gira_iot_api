@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+from config.custom_components.hass_gira_iot_api.coordinator import MyCoordinator
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
@@ -14,6 +15,7 @@ class MyData:
 
     gira_api: GiraDevice
     hass: HomeAssistant
+    coordinator: MyCoordinator
 
 
 type MyConfigEntry = ConfigEntry[MyData]
