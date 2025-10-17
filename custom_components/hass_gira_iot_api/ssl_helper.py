@@ -26,18 +26,19 @@
 
 # This is from https://gist.github.com/bloodearnest/9017111a313777b9cce5
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import ipaddress
+from pathlib import Path
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.x509.oid import NameOID
 
 
 def generate_selfsigned_cert(hostname, ip_addresses=None, key=None):
     """Generates self signed certificate for a hostname, and optional IP addresses."""
-    from cryptography import x509
-    from cryptography.x509.oid import NameOID
-    from cryptography.hazmat.primitives import hashes
-    from cryptography.hazmat.backends import default_backend
-    from cryptography.hazmat.primitives import serialization
-    from cryptography.hazmat.primitives.asymmetric import rsa
 
     # Generate our key
     if key is None:
@@ -65,7 +66,7 @@ def generate_selfsigned_cert(hostname, ip_addresses=None, key=None):
 
     # path_len=0 means this cert can only sign itself, not other certs.
     basic_contraints = x509.BasicConstraints(ca=True, path_length=0)
-    now = datetime.utcnow()
+    now = datetime.now(tz=timezone.utc)
     cert = (
         x509.CertificateBuilder()
         .subject_name(name)
@@ -85,8 +86,8 @@ def generate_selfsigned_cert(hostname, ip_addresses=None, key=None):
         encryption_algorithm=serialization.NoEncryption(),
     )
 
-    with open("domain_srv.crt", "wb") as f:
+    with Path("domain_srv.crt").open("wb") as f:
         f.write(cert_pem)
-    with open("domain_srv.key", "wb") as f:
+    with Path("domain_srv.key").open("wb") as f:
         f.write(key_pem)
     return cert_pem, key_pem
