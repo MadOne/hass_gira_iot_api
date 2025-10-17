@@ -8,5 +8,5 @@
   "issue_tracker": "https://github.com/MadOne/hass_gira_iot_api/issues",
   "loggers": ["hass_gira_iot_api"],
   "requirements": ["aiohttp"],
-  "version": "0.0.1"
+  "version": "0.1.0"
 }
