@@ -152,7 +152,7 @@ class MyCoverEntity(CoverEntity, CoordinatorEntity):
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.AUTO, HVACMode.HEAT]
     _attr_hvac_mode = HVACMode.AUTO
-    _attr_assumed_state = False
+    # _attr_assumed_state = True
 
     def __init__(
         self,
@@ -169,7 +169,6 @@ class MyCoverEntity(CoverEntity, CoordinatorEntity):
         self._attr_unique_id = CONST.DOMAIN + "_" + myGiraCover.uid
 
         self._attr_is_closed = None
-        self._attr_assumed_state = True
 
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
