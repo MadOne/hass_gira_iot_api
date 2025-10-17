@@ -63,14 +63,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
 
     entry.runtime_data = MyData(gira_api=giraApi, hass=hass, coordinator=coordinator)
 
-    print(get_url(hass=hass))
-
-    async def hello(request):
-        return web.Response(text="Hello, world")
-
     async def value(request):
         data = await request.json()
-        print(data)
+        # print(data)
         written_to_dev = None
         for event in data["events"]:
             uid = event["uid"]
@@ -79,26 +74,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
                 if uid in dev.keys():
                     dev[uid] = value
                     written_to_dev = dev_uid
-                    print(f"updated values in {dev_uid}")
+                    # print(f"updated values in {dev_uid}")
             if written_to_dev is not None:
                 coordinator.async_set_updated_data(giraApi.all_values)
             else:
-                print("uid not found")
+                ...
+                # print("uid not found")
 
         return web.json_response({"status": "ok"})
 
     app = web.Application()
-    app.add_routes([web.get("/", hello)])
     app.add_routes([web.post("/value", value)])
     server = web.AppRunner(app)
     ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    generate_selfsigned_cert("test.de", ["10.10.1.20"])
+    generate_selfsigned_cert("test.de", [entry.data[CONF.CALLBACK_HOST]])
     ssl_context.load_cert_chain("domain_srv.crt", "domain_srv.key")
 
     entry.async_create_background_task(
         hass=hass, target=server.setup(), name="server.setup"
     )
-    site = web.TCPSite(server, "0.0.0.0", 8124, ssl_context=ssl_context)
+    site = web.TCPSite(
+        server, "0.0.0.0", entry.data[CONF.PORT], ssl_context=ssl_context
+    )
     entry.async_create_background_task(
         hass=hass, target=site.start(), name="site.start"
     )

@@ -65,8 +65,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):
         data_schema: vol.Schema = vol.Schema(
             schema={
                 vol.Required(schema=CONF.HOST): str,
-                vol.Optional(schema=CONF.USERNAME, default="admin"): str,
-                vol.Optional(schema=CONF.PASSWORD, default="Connectivity"): str,
+                vol.Required(schema=CONF.USERNAME): str,
+                vol.Required(schema=CONF.PASSWORD): str,
+                vol.Optional(schema=CONF.PORT, default="8124"): str,
+                vol.Optional(schema=CONF.CALLBACK_HOST): str,
             }
         )
 
@@ -91,6 +93,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):
                 CONF.HOST: "host",
                 CONF.USERNAME: "username",
                 CONF.PASSWORD: "password",
+                CONF.PORT: "8124",
+                CONF.CALLBACK_HOST: "homeassistant_ip",
             },
         )
 
@@ -113,11 +117,18 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):
                 vol.Required(
                     schema=CONF.HOST, default=reconfigure_entry.data[CONF.HOST]
                 ): str,
-                vol.Optional(
+                vol.Required(
                     schema=CONF.USERNAME, default=reconfigure_entry.data[CONF.USERNAME]
                 ): str,
-                vol.Optional(
+                vol.Required(
                     schema=CONF.PASSWORD, default=reconfigure_entry.data[CONF.PASSWORD]
+                ): str,
+                vol.Optional(
+                    schema=CONF.PORT, default=reconfigure_entry.data[CONF.PORT]
+                ): str,
+                vol.Optional(
+                    schema=CONF.CALLBACK_HOST,
+                    default=reconfigure_entry.data[CONF.CALLBACK_HOST],
                 ): str,
                 # reconfigure of device postfix leads to duplicated devices
             }
@@ -131,6 +142,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):
                 CONF.HOST: "host",
                 CONF.USERNAME: "username",
                 CONF.PASSWORD: "password",
+                CONF.PORT: "port",
+                CONF.CALLBACK_HOST: "ha_ip",
             },
         )
 

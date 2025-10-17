@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
 
 
 @dataclass(frozen=True)
@@ -12,7 +12,8 @@ class ConfConstants:
     HOST = CONF_HOST
     PASSWORD = CONF_PASSWORD
     USERNAME = CONF_USERNAME
-    DEVICE_POSTFIX = "Device-Postfix"
+    CALLBACK_HOST: str = "ha_ip"
+    PORT = CONF_PORT
 
 
 CONF = ConfConstants()
