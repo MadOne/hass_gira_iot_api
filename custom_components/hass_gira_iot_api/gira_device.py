@@ -112,7 +112,7 @@ class GiraDevice:
     async def register_callback(self) -> None:
         """Get the UI json."""
         ha_ip = "10.10.1.20"
-        callback_port = "8080"
+        callback_port = "8124"
         payload = f"""{{\"valueCallback\":\"https://{ha_ip}:{callback_port}/value\"}}"""
         url = f"https://{self._host}/api/clients/{self._token}/callbacks"
         print(payload)

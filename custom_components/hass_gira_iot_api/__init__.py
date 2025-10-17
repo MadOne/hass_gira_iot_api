@@ -98,7 +98,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
     entry.async_create_background_task(
         hass=hass, target=server.setup(), name="server.setup"
     )
-    site = web.TCPSite(server, "localhost", 8124, ssl_context=ssl_context)
+    site = web.TCPSite(server, "0.0.0.0", 8124, ssl_context=ssl_context)
     entry.async_create_background_task(
         hass=hass, target=site.start(), name="site.start"
     )
