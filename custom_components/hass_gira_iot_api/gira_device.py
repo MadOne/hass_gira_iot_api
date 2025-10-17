@@ -238,6 +238,16 @@ class GiraDevice:
         self._functions = functions
         # log.warning(functions)
 
+    async def init(self):
+        """Do some stuff to get the api ready for HA."""
+        await self.connect()
+        await self.get_ui()
+        await self.get_all_values()
+        self.create_functions()
+        await self.create_gira_lights()
+        self.create_gira_climates()
+        self.create_gira_covers()
+
 
 class GiraLight:
     """Gira Light Class."""

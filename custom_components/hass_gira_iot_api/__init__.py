@@ -1,17 +1,8 @@
 """init."""
 
-import http.server
-import json
 import logging
-import ssl
 
-from aiohttp import web
-
-# from pathlib import Path
 from config.custom_components.hass_gira_iot_api.coordinator import MyCoordinator
-from config.custom_components.hass_gira_iot_api.ssl_helper import (
-    generate_selfsigned_cert,
-)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
@@ -43,21 +34,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
         user=entry.data[CONF.USERNAME],
         password=entry.data[CONF.PASSWORD],
     )
-    await giraApi.connect()
-    await giraApi.get_ui()
-    await giraApi.get_all_values()
-    giraApi.create_functions()
-    await giraApi.create_gira_lights()
-    giraApi.create_gira_climates()
-    giraApi.create_gira_covers()
-
-    # server = callback_server_run()
-    # hass.async_add_executor_job(server.start_server())
-    # thread = Thread(target=server.start_server)
-    # thread.start()
-    # await server.start_server()
-
-    # await restapi.login()
+    await giraApi.init()
 
     coordinator: MyCoordinator = MyCoordinator(hass=hass, gira_api=giraApi)
 
@@ -95,28 +72,6 @@ async def update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await hass.config_entries.async_reload(
         entry_id=entry.entry_id
     )  # list of entry_ids created for file
-
-
-async def async_migrate_entry(hass: HomeAssistant, config_entry: MyConfigEntry):
-    """Migrate old entry."""
-
-    new_data = {**config_entry.data}
-
-    if config_entry.version > 1:
-        # This means the user has downgraded from a future version
-        return True
-
-    # to ensure all update paths we have to check every version to not overwrite existing entries
-    if config_entry.version < 1:
-        log.warning(msg="Old Version detected")
-
-    if config_entry.version < 2:
-        log.warning(msg="Version <2 detected")
-
-    hass.config_entries.async_update_entry(
-        entry=config_entry, data=new_data, minor_version=1, version=2
-    )
-    return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
