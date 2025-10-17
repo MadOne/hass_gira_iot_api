@@ -50,7 +50,7 @@ class GiraDevice:
         response = await self._session.get(url=url, auth=self._auth, ssl=False)
         json = await response.json()
         self._ui = json
-        log.warning(msg=json)
+        # log.warning(msg=json)
 
     async def get_val(self, uid: str) -> int | None:
         """Get the UI json."""
@@ -108,6 +108,17 @@ class GiraDevice:
         _response = await self._session.put(
             url=url, auth=self._auth, ssl=False, data=payload
         )
+
+    async def register_callback(self) -> None:
+        """Get the UI json."""
+        ha_ip = "10.10.1.20"
+        callback_port = "8080"
+        payload = f"""{{\"valueCallback\":\"https://{ha_ip}:{callback_port}/value\"}}"""
+        url = f"https://{self._host}/api/clients/{self._token}/callbacks"
+        print(payload)
+        response = await self._session.post(url=url, ssl=False, data=payload)
+        print
+        print(response)
 
     async def create_gira_lights(self):
         """Create Gira Lights."""

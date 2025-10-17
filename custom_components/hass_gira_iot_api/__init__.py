@@ -1,11 +1,20 @@
 """init."""
 
+import http.server
+import json
 import logging
+import ssl
+
+from aiohttp import web
 
 # from pathlib import Path
 from config.custom_components.hass_gira_iot_api.coordinator import MyCoordinator
+from config.custom_components.hass_gira_iot_api.ssl_helper import (
+    generate_selfsigned_cert,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.network import get_url
 
 from .configentry import MyConfigEntry, MyData
 from .const import CONF
@@ -42,11 +51,59 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
     giraApi.create_gira_climates()
     giraApi.create_gira_covers()
 
+    # server = callback_server_run()
+    # hass.async_add_executor_job(server.start_server())
+    # thread = Thread(target=server.start_server)
+    # thread.start()
+    # await server.start_server()
+
     # await restapi.login()
 
     coordinator: MyCoordinator = MyCoordinator(hass=hass, gira_api=giraApi)
 
     entry.runtime_data = MyData(gira_api=giraApi, hass=hass, coordinator=coordinator)
+
+    print(get_url(hass=hass))
+
+    async def hello(request):
+        return web.Response(text="Hello, world")
+
+    async def value(request):
+        data = await request.json()
+        print(data)
+        written_to_dev = None
+        for event in data["events"]:
+            uid = event["uid"]
+            value = event["value"]
+            for dev_uid, dev in giraApi.all_values.items():
+                if uid in dev.keys():
+                    dev[uid] = value
+                    written_to_dev = dev_uid
+                    print(f"updated values in {dev_uid}")
+            if written_to_dev is not None:
+                coordinator.async_set_updated_data(giraApi.all_values)
+            else:
+                print("uid not found")
+
+        return web.json_response({"status": "ok"})
+
+    app = web.Application()
+    app.add_routes([web.get("/", hello)])
+    app.add_routes([web.post("/value", value)])
+    server = web.AppRunner(app)
+    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    generate_selfsigned_cert("test.de", ["10.10.1.20"])
+    ssl_context.load_cert_chain("domain_srv.crt", "domain_srv.key")
+
+    entry.async_create_background_task(
+        hass=hass, target=server.setup(), name="server.setup"
+    )
+    site = web.TCPSite(server, "localhost", 8124, ssl_context=ssl_context)
+    entry.async_create_background_task(
+        hass=hass, target=site.start(), name="site.start"
+    )
+
+    await giraApi.register_callback()
 
     # see https://community.home-assistant.io/t/config-flow-how-to-update-an-existing-entity/522442/8
     entry.async_on_unload(func=entry.add_update_listener(listener=update_listener))
