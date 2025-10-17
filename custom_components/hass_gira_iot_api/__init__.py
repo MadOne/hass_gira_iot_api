@@ -28,14 +28,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
     # Store an instance of the "connecting" class that does the work of speaking
     # with your actual devices.
     # hass.data.setdefault(DOMAIN, {})[entry.entry_id] = hub.Hub(hass, entry.data["host"])
-
     giraApi: GiraDevice = GiraDevice(
         host=entry.data[CONF.HOST],
         user=entry.data[CONF.USERNAME],
         password=entry.data[CONF.PASSWORD],
     )
-    await giraApi.init()
-
     coordinator: MyCoordinator = MyCoordinator(hass=hass, gira_api=giraApi)
 
     entry.runtime_data = MyData(gira_api=giraApi, hass=hass, coordinator=coordinator)
@@ -46,9 +43,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
         coordinator=coordinator,
         hass=hass,
     )
+
     mycallbackserver.start()
 
-    await giraApi.register_callback()
+    await giraApi.init()
 
     # see https://community.home-assistant.io/t/config-flow-how-to-update-an-existing-entity/522442/8
     entry.async_on_unload(func=entry.add_update_listener(listener=update_listener))

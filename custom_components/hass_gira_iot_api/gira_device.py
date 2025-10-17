@@ -247,6 +247,7 @@ class GiraDevice:
         await self.create_gira_lights()
         self.create_gira_climates()
         self.create_gira_covers()
+        await self.register_callback()
 
 
 class GiraLight:
