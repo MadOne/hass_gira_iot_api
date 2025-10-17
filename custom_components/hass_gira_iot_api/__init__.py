@@ -72,6 +72,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
             value = event["value"]
             for dev_uid, dev in giraApi.all_values.items():
                 if uid in dev.keys():
+
                     dev[uid] = value
                     written_to_dev = dev_uid
                     # print(f"updated values in {dev_uid}")

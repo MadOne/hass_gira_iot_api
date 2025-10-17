@@ -152,6 +152,7 @@ class MyCoverEntity(CoverEntity, CoordinatorEntity):
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.AUTO, HVACMode.HEAT]
     _attr_hvac_mode = HVACMode.AUTO
+    _attr_assumed_state = False
 
     def __init__(
         self,
@@ -168,6 +169,7 @@ class MyCoverEntity(CoverEntity, CoordinatorEntity):
         self._attr_unique_id = CONST.DOMAIN + "_" + myGiraCover.uid
 
         self._attr_is_closed = None
+        self._attr_assumed_state = True
 
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
@@ -188,6 +190,7 @@ class MyCoverEntity(CoverEntity, CoordinatorEntity):
                 case "position":
                     print(f"{key}:{value}")
                     position: int = int(value)
+                    position = 100 - position
                     await self._GiraDevice.set_val(
                         uid=self._GiraCover.PositionUid, val=position
                     )
@@ -196,8 +199,6 @@ class MyCoverEntity(CoverEntity, CoordinatorEntity):
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
         await self._GiraDevice.set_val(uid=self._GiraCover.StepUpDownUid, val=1)
-        self._attr_is_closing = False
-        self._attr_is_opening = False
         self.async_write_ha_state()
 
     async def async_open_cover_tilt(self, **kwargs):
@@ -228,7 +229,7 @@ class MyCoverEntity(CoverEntity, CoordinatorEntity):
             match key:
                 case self._GiraCover.PositionUid:
                     if value != "":
-                        self._attr_current_cover_position = int(float(value))
+                        self._attr_current_cover_position = 100 - int(float(value))
                 case self._GiraCover.SlatPositionUid:
                     if value != "":
                         self._attr_current_cover_tilt_position = int(float(value))
