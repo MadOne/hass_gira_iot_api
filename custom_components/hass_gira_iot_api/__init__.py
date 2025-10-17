@@ -14,8 +14,8 @@ from config.custom_components.hass_gira_iot_api.ssl_helper import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.network import get_url
 
+from .callback_server import CallBackServer
 from .configentry import MyConfigEntry, MyData
 from .const import CONF
 from .gira_device import GiraDevice
@@ -63,43 +63,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
 
     entry.runtime_data = MyData(gira_api=giraApi, hass=hass, coordinator=coordinator)
 
-    async def value(request):
-        data = await request.json()
-        # print(data)
-        written_to_dev = None
-        for event in data["events"]:
-            uid = event["uid"]
-            value = event["value"]
-            for dev_uid, dev in giraApi.all_values.items():
-                if uid in dev.keys():
-
-                    dev[uid] = value
-                    written_to_dev = dev_uid
-                    # print(f"updated values in {dev_uid}")
-            if written_to_dev is not None:
-                coordinator.async_set_updated_data(giraApi.all_values)
-            else:
-                ...
-                # print("uid not found")
-
-        return web.json_response({"status": "ok"})
-
-    app = web.Application()
-    app.add_routes([web.post("/value", value)])
-    server = web.AppRunner(app)
-    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    generate_selfsigned_cert("test.de", [entry.data[CONF.CALLBACK_HOST]])
-    ssl_context.load_cert_chain("domain_srv.crt", "domain_srv.key")
-
-    entry.async_create_background_task(
-        hass=hass, target=server.setup(), name="server.setup"
+    mycallbackserver: CallBackServer = CallBackServer(
+        entry=entry,
+        giraApi=giraApi,
+        coordinator=coordinator,
+        hass=hass,
     )
-    site = web.TCPSite(
-        server, "0.0.0.0", entry.data[CONF.PORT], ssl_context=ssl_context
-    )
-    entry.async_create_background_task(
-        hass=hass, target=site.start(), name="site.start"
-    )
+    mycallbackserver.start()
 
     await giraApi.register_callback()
 
