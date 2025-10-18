@@ -44,7 +44,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
         hass=hass,
     )
 
-    mycallbackserver.start()
+    await mycallbackserver.start()
 
     await giraApi.init()
 

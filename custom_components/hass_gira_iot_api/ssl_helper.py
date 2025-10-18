@@ -30,6 +30,7 @@ from datetime import datetime, timedelta, timezone
 import ipaddress
 from pathlib import Path
 
+from aiofiles import open as aiofiles_open
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
@@ -37,7 +38,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 
 
-def generate_selfsigned_cert(hostname, ip_addresses=None, key=None):
+async def generate_selfsigned_cert(hostname, ip_addresses=None, key=None):
     """Generates self signed certificate for a hostname, and optional IP addresses."""
 
     # Generate our key
@@ -86,8 +87,9 @@ def generate_selfsigned_cert(hostname, ip_addresses=None, key=None):
         encryption_algorithm=serialization.NoEncryption(),
     )
 
-    with Path("domain_srv.crt").open("wb") as f:
-        f.write(cert_pem)
-    with Path("domain_srv.key").open("wb") as f:
-        f.write(key_pem)
+    async with aiofiles_open("domain_srv.crt", "wb") as f:
+        await f.write(cert_pem)
+    async with aiofiles_open("domain_srv.key", "wb") as f:
+        await f.write(key_pem)
+
     return cert_pem, key_pem
