@@ -1,3 +1,9 @@
+"""SSL Certificate Helper."""
+
+# This is a slightly modified version from https://gist.github.com/bloodearnest/9017111a313777b9cce5
+
+# Original license
+
 # Copyright 2018 Simon Davy
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,11 +30,8 @@
 # Caveat emptor
 #
 
-# This is from https://gist.github.com/bloodearnest/9017111a313777b9cce5
-
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 import ipaddress
-from pathlib import Path
 
 from aiofiles import open as aiofiles_open
 from cryptography import x509
@@ -67,7 +70,7 @@ async def generate_selfsigned_cert(hostname, ip_addresses=None, key=None):
 
     # path_len=0 means this cert can only sign itself, not other certs.
     basic_contraints = x509.BasicConstraints(ca=True, path_length=0)
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     cert = (
         x509.CertificateBuilder()
         .subject_name(name)

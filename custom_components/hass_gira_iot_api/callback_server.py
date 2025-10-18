@@ -2,8 +2,7 @@
 
 import ssl
 
-import aiofiles
-from aiofiles import os, ospath
+from aiofiles import ospath
 from aiohttp import web
 
 from config.custom_components.hass_gira_iot_api.configentry import MyConfigEntry
@@ -12,7 +11,6 @@ from config.custom_components.hass_gira_iot_api.ssl_helper import (
     generate_selfsigned_cert,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.util import ssl as ha_ssl
 
 from .const import CONF
 from .gira_device import GiraDevice
@@ -71,7 +69,7 @@ class CallBackServer:
             uid = event["uid"]
             value = event["value"]
             for dev_uid, dev in self._giraApi.all_values.items():
-                if uid in dev.keys():
+                if uid in dev:  # if uid in dev.keys():
                     dev[uid] = value
                     written_to_dev = dev_uid
                     # print(f"updated values in {dev_uid}")
