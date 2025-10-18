@@ -20,8 +20,8 @@ class GiraDevice:
         self._user: str = user
         self._password: str = password
         self._token: str | None = None
-        self._ui = {}
-        self._functions = []
+        self._ui: dict[str, Any] = {}
+        self._functions: dict[str, Any] = []
         self.all_values: dict[str, dict[str, Any]] = {}
         self.gira_lights: dict[str, GiraLight] = {}
         self.gira_climates: dict[str, GiraClimate] = {}
@@ -61,7 +61,7 @@ class GiraDevice:
         try:
             return json["values"][0]["value"]
         except:  # noqa: E722
-            ...
+            return None
 
     async def get_device_values(self, uid: str) -> dict[str, str | int | float]:
         """Get the UI json."""
@@ -115,10 +115,7 @@ class GiraDevice:
         callback_port = "8124"
         payload = f"""{{\"valueCallback\":\"https://{ha_ip}:{callback_port}/value\"}}"""
         url = f"https://{self._host}/api/clients/{self._token}/callbacks"
-        print(payload)
-        response = await self._session.post(url=url, ssl=False, data=payload)
-        print
-        print(response)
+        await self._session.post(url=url, ssl=False, data=payload)
 
     async def create_gira_lights(self):
         """Create Gira Lights."""

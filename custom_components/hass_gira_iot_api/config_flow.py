@@ -73,7 +73,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=CONST.DOMAIN):
         )
 
         errors: dict[str, str] = {}
-        info: dict[str, str] = {}
+        # info: dict[str, str] = {}
         if user_input is not None:
             try:
                 info: dict[str, str] = await validate_input(data=user_input)

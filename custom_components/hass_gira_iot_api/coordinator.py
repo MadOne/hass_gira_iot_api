@@ -1,6 +1,5 @@
 """The Update Coordinator for the ModbusItems."""
 
-import asyncio
 from datetime import timedelta
 import logging
 from typing import Any

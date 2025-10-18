@@ -138,7 +138,6 @@ class MyClimateEntity(ClimateEntity, CoordinatorEntity):
                         self._attr_target_temperature = float(value)
                 case self._GiraClimate.ModeUid:
                     ...
-                    # ToDo
         self.async_write_ha_state()
 
 
@@ -172,13 +171,13 @@ class MyCoverEntity(CoverEntity, CoordinatorEntity):
 
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
-        print(**kwargs)
+        # print(**kwargs)
         await self._GiraDevice.set_val(uid=self._GiraCover.UpDownUid, val=0)
         self.async_write_ha_state()
 
     async def async_close_cover(self, **kwargs):
         """Close cover."""
-        print(f"{self._GiraCover.UpDownUid}:1")
+        # print(f"{self._GiraCover.UpDownUid}:1")
         await self._GiraDevice.set_val(uid=self._GiraCover.UpDownUid, val=1)
         self.async_write_ha_state()
 
@@ -187,7 +186,7 @@ class MyCoverEntity(CoverEntity, CoordinatorEntity):
         for key, value in kwargs.items():
             match key:
                 case "position":
-                    print(f"{key}:{value}")
+                    # print(f"{key}:{value}")
                     position: int = int(value)
                     position = 100 - position
                     await self._GiraDevice.set_val(
