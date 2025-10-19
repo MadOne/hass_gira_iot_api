@@ -47,19 +47,25 @@ class MyLightEntity(LightEntity, CoordinatorEntity):
         # self._attr_brightness: int | None = myGiraLight.DimmVal
         # self._attr_color_temp_kelvin: int | None = myGiraLight.TuneVal
         # print(myGiraLight.OnOffVal)
-        supported_color_modes: set[ColorMode] = {ColorMode.ONOFF}
-        color_mode: ColorMode = ColorMode.ONOFF
 
-        if myGiraLight.DimmUid != "":
-            supported_color_modes: set[ColorMode] = {ColorMode.BRIGHTNESS}
-            color_mode: ColorMode = ColorMode.BRIGHTNESS
-        if myGiraLight.TuneUid != "":
-            supported_color_modes: set[ColorMode] = {ColorMode.COLOR_TEMP}
-            color_mode: ColorMode = ColorMode.COLOR_TEMP
+        # OnOff Device
+        if myGiraLight.DimmUid == "" and myGiraLight.TuneUid == "":
+            self.supported_color_modes: set[ColorMode] = {ColorMode.ONOFF}
+            self.color_mode: ColorMode = ColorMode.ONOFF
+
+        # Dimmable Device
+        elif myGiraLight.DimmUid != "":
+            self.supported_color_modes: set[ColorMode] = {ColorMode.BRIGHTNESS}
+            self.color_mode: ColorMode = ColorMode.BRIGHTNESS
+        # Tunable device
+        elif myGiraLight.TuneUid != "":
+            self.supported_color_modes: set[ColorMode] = {ColorMode.COLOR_TEMP}
+            self.color_mode: ColorMode = ColorMode.COLOR_TEMP
             self._attr_max_color_temp_kelvin = DEFAULT_MAX_KELVIN
             self._attr_min_color_temp_kelvin = DEFAULT_MIN_KELVIN
-        self.supported_color_modes = supported_color_modes
-        self.color_mode = color_mode
+        else:
+            # Colored light (not implemented yet)
+            pass
 
     async def async_turn_on(self, **kwargs):
         """Turn device on."""
@@ -123,6 +129,8 @@ class MyClimateEntity(ClimateEntity, CoordinatorEntity):
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
+        for arg in kwargs:
+            print(arg)
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -137,7 +145,7 @@ class MyClimateEntity(ClimateEntity, CoordinatorEntity):
                     if value != "":
                         self._attr_target_temperature = float(value)
                 case self._GiraClimate.ModeUid:
-                    ...
+                    print(f"{value}")
         self.async_write_ha_state()
 
 
