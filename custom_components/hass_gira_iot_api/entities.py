@@ -130,7 +130,8 @@ class MyClimateEntity(ClimateEntity, CoordinatorEntity):
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
         for arg in kwargs:
-            print(arg)
+            ...
+            # print(arg)
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -145,7 +146,8 @@ class MyClimateEntity(ClimateEntity, CoordinatorEntity):
                     if value != "":
                         self._attr_target_temperature = float(value)
                 case self._GiraClimate.ModeUid:
-                    print(f"{value}")
+                    if value != "":
+                        print(f"{value}")
         self.async_write_ha_state()
 
 

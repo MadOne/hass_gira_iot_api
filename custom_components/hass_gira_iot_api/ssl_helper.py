@@ -1,4 +1,15 @@
-"""SSL Certificate Helper."""
+"""SSL certificate helper utilities.
+
+This module provides a helper to generate a self-signed X.509 certificate
+for development and testing purposes only.
+
+Notes:
+-----
+- The generated certificate is intended for local development and testing.
+  Do not use these certificates in production environments.
+- The implementation is a slightly modified version of a public gist and
+  retains the original license (MIT). See header comments for details.
+"""
 
 # This is a slightly modified version from https://gist.github.com/bloodearnest/9017111a313777b9cce5
 
@@ -42,8 +53,36 @@ from cryptography.x509.oid import NameOID
 
 
 async def generate_selfsigned_cert(hostname, ip_addresses=None, key=None):
-    """Generates self signed certificate for a hostname, and optional IP addresses."""
+    """Generate a self-signed certificate and private key files.
 
+    The function creates a self-signed X.509 certificate and a matching
+    private key, writes them to `domain_srv.crt` and `domain_srv.key` in the
+    current working directory, and returns nothing.
+
+    Parameters
+    ----------
+    hostname : str
+        The common name (CN) and DNS SubjectAlternativeName to include in the
+        certificate.
+    ip_addresses : list[str] | None, optional
+        Optional list of IP address strings to include in the SAN. Each entry
+        will be added both as a DNSName (for OpenSSL compatibility) and as an
+        IPAddress (for stricter TLS implementations) where appropriate.
+    key : rsa.RSAPrivateKey | None, optional
+        Optional existing RSA private key to use. If not provided, a new 2048
+        bit RSA key will be generated.
+
+    Returns:
+    -------
+    None
+
+    Warnings:
+    --------
+    - The generated certificate is long-lived (10 years by default) and is
+      suitable only for testing. Do not use it in production.
+    - The function writes files to the current working directory without
+      additional safeguards.
+    """
     # Generate our key
     if key is None:
         key = rsa.generate_private_key(
@@ -90,9 +129,8 @@ async def generate_selfsigned_cert(hostname, ip_addresses=None, key=None):
         encryption_algorithm=serialization.NoEncryption(),
     )
 
+    # works, besides bytes instead of string warnings
     async with aiofiles_open("domain_srv.crt", "wb") as f:
         await f.write(cert_pem)
     async with aiofiles_open("domain_srv.key", "wb") as f:
         await f.write(key_pem)
-
-    return cert_pem, key_pem
