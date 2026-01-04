@@ -1,4 +1,4 @@
-# Version 0.0.1
+# Version 0.1.3
 Initial Release
 
 # hass_gira_iot_api
@@ -39,13 +39,16 @@ custom_components
 │   └── light.py
 ```
 ## Configuration
-Bild hinzufügen
+<img width="419" height="581" alt="Screenshot From 2025-10-19 20-03-50" src="https://github.com/user-attachments/assets/a9f02c36-7c37-404e-b835-71f56033a70a" />
+
 
 
 The only mandatory parameters are:
 * The IP-Address of your Gira Iot  device.
 * The user name.
 * The password.
+* Port used for the CallBack Server. This port has to be free and accessible from your homenetwork
+* Ip of the HomeAssistant. This is needed to register the CallBack url.
 
 # Disclaimer
 The developers of this integration are not affiliated with Gira. They have created the integration as open source in their spare time on the basis of publicly accessible information.
