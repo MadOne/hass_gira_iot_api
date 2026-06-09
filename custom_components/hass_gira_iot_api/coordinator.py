@@ -4,7 +4,7 @@ from datetime import timedelta
 import logging
 from typing import Any
 
-from config.custom_components.hass_gira_iot_api.gira_device import GiraDevice
+from .gira_device import GiraDevice
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 

@@ -3,21 +3,26 @@
 import logging
 from typing import Any
 
-from homeassistant.components.climate import ClimateEntity, HVACMode
-from homeassistant.components.cover import CoverEntity
+from homeassistant.components.climate import (
+    ClimateEntity,
+    ClimateEntityFeature,
+    HVACMode,
+)
+from homeassistant.components.cover import CoverEntity, CoverEntityFeature
 from homeassistant.components.light import (
     DEFAULT_MAX_KELVIN,
     DEFAULT_MIN_KELVIN,
     ColorMode,
     LightEntity,
 )
+from homeassistant.components.scene import Scene
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import callback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONST
 from .coordinator import MyCoordinator
-from .gira_device import GiraClimate, GiraCover, GiraDevice, GiraLight
+from .gira_device import GiraClimate, GiraCover, GiraDevice, GiraLight, GiraScene
 
 logging.basicConfig()
 log: logging.Logger = logging.getLogger(name=__name__)
@@ -112,6 +117,10 @@ class MyClimateEntity(ClimateEntity, CoordinatorEntity):
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.AUTO, HVACMode.HEAT]
     _attr_hvac_mode = HVACMode.AUTO
+    _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
+    _attr_min_temp = 5.0
+    _attr_max_temp = 30.0
+    _attr_target_temperature_step = 0.5
 
     def __init__(
         self,
@@ -119,7 +128,7 @@ class MyClimateEntity(ClimateEntity, CoordinatorEntity):
         myGiraClimate: GiraClimate,
         coordinator: MyCoordinator,
     ) -> None:
-        """MyLight Entity Class init."""
+        """MyClimate Entity Class init."""
         CoordinatorEntity.__init__(self, coordinator=coordinator)
         self.uid = myGiraClimate.uid
         self._GiraDevice: GiraDevice = myGiraDevice
@@ -129,9 +138,10 @@ class MyClimateEntity(ClimateEntity, CoordinatorEntity):
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
-        for arg in kwargs:
-            ...
-            # print(arg)
+        temp = kwargs.get("temperature")
+        if temp is None or not self._GiraClimate.SetPointUid:
+            return
+        await self._GiraDevice.set_val(self._GiraClimate.SetPointUid, temp)
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -146,22 +156,16 @@ class MyClimateEntity(ClimateEntity, CoordinatorEntity):
                     if value != "":
                         self._attr_target_temperature = float(value)
                 case self._GiraClimate.ModeUid:
-                    if value != "":
-                        print(f"{value}")
+                    print(f"{value}")
         self.async_write_ha_state()
 
 
 class MyCoverEntity(CoverEntity, CoordinatorEntity):
-    """MyLight Entity Class."""
+    """MyCover Entity Class."""
 
     _attr_should_poll: bool = True
     _attr_has_entity_name: bool = True
     _attr_entity_name: None | str = None
-
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
-    _attr_hvac_modes = [HVACMode.AUTO, HVACMode.HEAT]
-    _attr_hvac_mode = HVACMode.AUTO
-    # _attr_assumed_state = True
 
     def __init__(
         self,
@@ -169,15 +173,28 @@ class MyCoverEntity(CoverEntity, CoordinatorEntity):
         myGiraCover: GiraCover,
         coordinator: MyCoordinator,
     ) -> None:
-        """MyLight Entity Class init."""
+        """MyCover Entity Class init."""
         CoordinatorEntity.__init__(self, coordinator=coordinator)
         self.uid = myGiraCover.uid
         self._GiraDevice: GiraDevice = myGiraDevice
         self._GiraCover: GiraCover = myGiraCover
         self._attr_name = myGiraCover.name
         self._attr_unique_id = CONST.DOMAIN + "_" + myGiraCover.uid
-
         self._attr_is_closed = None
+
+        features = CoverEntityFeature(0)
+        if myGiraCover.UpDownUid:
+            features |= (
+                CoverEntityFeature.OPEN
+                | CoverEntityFeature.CLOSE
+            )
+        if myGiraCover.StepUpDownUid:
+            features |= CoverEntityFeature.STOP
+        if myGiraCover.PositionUid:
+            features |= CoverEntityFeature.SET_POSITION
+        if myGiraCover.SlatPositionUid:
+            features |= CoverEntityFeature.SET_TILT_POSITION
+        self._attr_supported_features = features
 
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
@@ -237,9 +254,35 @@ class MyCoverEntity(CoverEntity, CoordinatorEntity):
             match key:
                 case self._GiraCover.PositionUid:
                     if value != "":
-                        self._attr_current_cover_position = 100 - int(float(value))
+                        pos = 100 - int(float(value))
+                        self._attr_current_cover_position = pos
+                        self._attr_is_closed = pos == 0
                 case self._GiraCover.SlatPositionUid:
                     if value != "":
                         self._attr_current_cover_tilt_position = int(float(value))
 
         self.async_write_ha_state()
+
+
+class MyScene(Scene):
+    """Gira HS4 Scene entity — write to Scene datapoint to activate."""
+
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        myGiraDevice: GiraDevice,
+        myGiraScene: GiraScene,
+    ) -> None:
+        """MyScene Entity Class init."""
+        self._GiraDevice: GiraDevice = myGiraDevice
+        self._GiraScene: GiraScene = myGiraScene
+        self._attr_name = myGiraScene.name
+        self._attr_unique_id = CONST.DOMAIN + "_" + myGiraScene.uid
+
+    async def async_activate(self, **kwargs: Any) -> None:
+        """Activate the scene by writing to its Scene datapoint."""
+        if not self._GiraScene.SceneUid:
+            log.warning("Scene %s has no SceneUid datapoint", self._GiraScene.name)
+            return
+        await self._GiraDevice.set_val(self._GiraScene.SceneUid, 1)

@@ -2,7 +2,7 @@
 
 import logging
 
-from config.custom_components.hass_gira_iot_api.coordinator import MyCoordinator
+from .coordinator import MyCoordinator
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
@@ -18,6 +18,7 @@ PLATFORMS: list[str] = [
     "climate",
     "cover",
     "light",
+    "scene",
 ]
 
 
@@ -32,6 +33,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyConfigEntry) -> bool:
         host=entry.data[CONF.HOST],
         user=entry.data[CONF.USERNAME],
         password=entry.data[CONF.PASSWORD],
+        callback_host=entry.data.get(CONF.CALLBACK_HOST),
+        callback_port=entry.data.get(CONF.PORT, "8124"),
     )
     coordinator: MyCoordinator = MyCoordinator(hass=hass, gira_api=giraApi)
 
@@ -74,10 +77,11 @@ async def update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload entry."""
-    # This is called when an entry/configured device is to be removed. The class
-    # needs to unload itself, and remove callbacks. See the classes for further
-    # details
-    entry.runtime_data.rest_api.close()
-    return await hass.config_entries.async_unload_platforms(
+    unload_ok = await hass.config_entries.async_unload_platforms(
         entry=entry, platforms=PLATFORMS
     )
+    if unload_ok and getattr(entry, "runtime_data", None) is not None:
+        gira_api = getattr(entry.runtime_data, "gira_api", None)
+        if gira_api is not None:
+            await gira_api.close()
+    return unload_ok

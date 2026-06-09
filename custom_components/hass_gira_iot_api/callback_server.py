@@ -5,11 +5,9 @@ import ssl
 from aiofiles import ospath
 from aiohttp import web
 
-from config.custom_components.hass_gira_iot_api.configentry import MyConfigEntry
-from config.custom_components.hass_gira_iot_api.coordinator import MyCoordinator
-from config.custom_components.hass_gira_iot_api.ssl_helper import (
-    generate_selfsigned_cert,
-)
+from .configentry import MyConfigEntry
+from .coordinator import MyCoordinator
+from .ssl_helper import generate_selfsigned_cert
 from homeassistant.core import HomeAssistant
 
 from .const import CONF

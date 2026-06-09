@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from config.custom_components.hass_gira_iot_api.coordinator import MyCoordinator
+from .coordinator import MyCoordinator
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
